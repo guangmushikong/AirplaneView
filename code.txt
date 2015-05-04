@@ -1,0 +1,36 @@
+void drawAirPlane::draw(QPainter &painter,
+                        int x,
+                        int y,
+                        double scale)
+{
+  Q_ASSERT(scale < 1);
+
+  int _x = -x;
+  int _y = -y;
+  double _scale = painter.viewport().width()*scale/40;
+
+  painter.setWindow(_x, _y,
+                    painter.viewport().width(),
+                    painter.viewport().height());
+
+  // draw an airplane
+  QBrush PlaneBrush(QColor(0, 100, 0));
+  painter.setBrush(PlaneBrush);
+  painter.setPen(Qt::NoPen);
+  // 1st draw one horizontal rectangle
+  MyRectF rect1(QPointF(-20.0, -5.0), QPointF(20.0, 5.0));
+  rect1.scaleVle(_scale);
+  painter.drawRoundRect(rect1.getCore(), 50, 50);
+  // 2nd draw one vertical rectangle
+  MyRectF rect2(QPointF(-5.0, -15.0), QPointF(5, 15.0));
+  rect2.scaleVle(_scale);
+  painter.drawRoundRect(rect2.getCore(), 50, 50);
+  // 3nd draw another horizontal rectangle
+  MyRectF rect3(QPointF(-10.0, 11.0), QPointF(10.0, 21));
+  rect3.scaleVle(_scale);
+  painter.drawRoundRect(rect3.getCore(), 50, 50);
+
+  painter.setWindow(0, 0,
+                    painter.viewport().width(),
+                    painter.viewport().height());
+}
