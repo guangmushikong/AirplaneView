@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     geoshapedata.cpp \
     maptool.cpp \
     udpsettingdialog.cpp \
-    udpmsgformat.cpp
+    udpmsgformat.cpp \
+    coordtranslate.cpp
 
 HEADERS  += mainwindow.h \
     myrectf.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     geoshapedata.h \
     maptool.h \
     udpsettingdialog.h \
-    udpmsgformat.h
+    udpmsgformat.h \
+    coordtranslate.h
 
 FORMS    += mainwindow.ui \
     udpsettingdialog.ui \

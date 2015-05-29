@@ -1,8 +1,8 @@
 #include "detailedmap.h"
 #include <QPainter>
 #include <QImage>
+#include "coordtranslate.h"
 
-//#include "drawobject.h"
 
 DetailedMap::DetailedMap(QWidget* parent):PaintArea(parent)
 {
@@ -13,7 +13,6 @@ DetailedMap::DetailedMap(QWidget* parent):PaintArea(parent)
 
 DetailedMap::~DetailedMap()
 {
-
 }
 
 double DetailedMap::getDrawScale()
@@ -35,6 +34,7 @@ double DetailedMap::getDrawScale()
 
 void DetailedMap::setGeoCoordSys(QPainter &painter)
 {
+  painter.setWindow(-300, 300, 600, -600);
 }
 
 void DetailedMap::translate(QPointF p)
@@ -43,7 +43,26 @@ void DetailedMap::translate(QPointF p)
   diffP /= PanScale;
   diffP /= getDrawScale();
   QPointF rf = geoRect.topLeft();
-  rf += diffP;
+  rf.setX(rf.x() - diffP.x());
+  rf.setY(rf.y() + diffP.y());
   geoRect.moveTopLeft(rf);
   this->update();
+}
+
+void DetailedMap::getGeoPixCoordFromOriginCoord(QPoint & p)
+{
+  p.setX(p.x()-300);
+  p.setY(300-p.y());
+  //CoordTranslate<QPoint> ct;
+  //ct.Pixel2World();
+}
+
+QPointF DetailedMap::getWorldCoord(QPoint p)
+{
+  getGeoPixCoordFromOriginCoord(p);
+  QPointF pixelP(p);
+  CoordTranslate<QPointF> ct;
+  ct.Pixel2World(geoRect, getDrawScale(), pixelP);
+
+  return pixelP;
 }

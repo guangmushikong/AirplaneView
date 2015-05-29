@@ -10,7 +10,8 @@ public:
   explicit EagleEyeMap(QWidget* parent = 0);
   ~EagleEyeMap();
 
-  //void drawline(){}
+public:
+  virtual void translate(QPointF);
 
 protected:
   virtual double getDrawScale();

@@ -12,6 +12,11 @@ EagleEyeMap::~EagleEyeMap()
 
 }
 
+void EagleEyeMap::translate(QPointF)
+{
+
+}
+
 double EagleEyeMap::getDrawScale()
 {
   double xscale, yscale;
@@ -31,4 +36,5 @@ double EagleEyeMap::getDrawScale()
 
 void EagleEyeMap::setGeoCoordSys(QPainter &painter)
 {
+  painter.setWindow(-100, 100, 200, -200);
 }

@@ -31,8 +31,9 @@ MapToolZoom::MapToolZoom(PaintArea *view):MapTool(view)
 MapToolZoom::~MapToolZoom()
 {}
 
-void MapToolZoom::OnWheelZoom(double _scale)
+void MapToolZoom::OnWheelZoom(double _scale, QPoint mouse)
 {
+  QPoint relativePos = mouse - pView->pos();
   if (_scale > .0)
-    pView->Zoom(_scale);
+    pView->Zoom(_scale, relativePos);
 }

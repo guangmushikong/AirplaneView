@@ -7,6 +7,7 @@
 #include <QStringListModel>
 #include <QUdpSocket>
 #include <sstream>
+#include <QLabel>
 
 
 
@@ -42,11 +43,12 @@ private slots:
   void readPendingDatagrams();
 
 protected:
+  void mouseMoveEvent(QMouseEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseReleaseEvent(QMouseEvent* event);
   void wheelEvent(QWheelEvent* event);
-    void processTheDatagram(std::string);
-	bool getAirPlaneMsg(std::string & data, AirPlane &ap);
+  void processTheDatagram(std::string);
+  bool getAirPlaneMsg(std::string & data, AirPlane &ap);
 
 private:
   void initializeLegend();
@@ -60,13 +62,20 @@ private:
   PaintArea* pDetailedPaint;
   QRect DetailedPaintR;
   QRect EagleEyePaintR;
-  MapTool* pMapTool;
+  //MapTool* pMapTool;
+  MapTool* pMapZoom;
+  MapTool* pMapPan;
   UdpSettingDialog* pUdp;
   QUdpSocket* pSocket;
+  //QStatusBar* pStatusBar;
+  QLabel* pStatusLabel;
+  QRubberBand* pRubberBand;
+  QLabel* pPlaneMsgLabel;
 
 private:
+  QPoint  rubberBandStart;
   QString defaultPath;
-    std::istringstream iss;
+  std::istringstream iss;
 };
 
 #endif // MAINWINDOW_H

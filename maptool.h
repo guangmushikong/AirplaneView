@@ -14,7 +14,7 @@ public:
 public:
   virtual void OnLButtonUp(QPointF p){}
   virtual void OnLButtonDown(QPointF p){}
-  virtual void OnWheelZoom(double _scale){}
+  virtual void OnWheelZoom(double _scale, QPoint mouse){}
 
 protected:
   PaintArea* pView;
@@ -41,7 +41,7 @@ public:
   ~MapToolZoom();
 
 public:
-  virtual void OnWheelZoom(double _scale);
+  virtual void OnWheelZoom(double _scale, QPoint mouse);
 };
 
 #endif // MAPTOOL_H

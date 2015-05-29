@@ -6,9 +6,6 @@
 #include "mypolygon.h"
 #include "geoshapedata.h"
 
-#define WindowWidth 400
-#define WindowHeight 400
-
 
 //void drawObject::setGeoCoordSys(QPainter &painter)
 //{
@@ -35,19 +32,24 @@ void drawAirplane::draw(QPainter &painter)
   painter.setPen(Qt::NoPen);
   QPointF pf;
   list<QPointF>::iterator it;
-  int idx = 0;
-  for (it=GeoShapeData::listAirplanes.begin(); 
-	   it!=GeoShapeData::listAirplanes.end(); ++it)
+  for (it  = GeoShapeData::listExposurePoint.begin();
+       it != GeoShapeData::listExposurePoint.end(); ++it)
   {
-	  pf = *it;
-	  pf -= geoRect.topLeft();
-	  pf *= scale;
-	  if (++idx == GeoShapeData::listAirplanes.size())
-	  {
-		  brush.setColor(QColor(255, 0, 0));
-		  painter.setBrush(brush);
-	  }
-	  painter.drawEllipse(pf, 3, 3);
+    pf = *it;
+    pf -= geoRect.center();
+    pf *= scale;
+    painter.drawEllipse(pf, 3, 3);
+  }
+
+  // CCP
+  if (GeoShapeData::currentAirplanePos != QPointF(.0, .0))
+  {
+    brush.setColor(QColor(255, 0, 0));
+    painter.setBrush(brush);
+    pf = GeoShapeData::currentAirplanePos;
+    pf -= geoRect.center();
+    pf *= scale;
+    painter.drawEllipse(pf, 3, 3);
   }
 }
 
@@ -63,7 +65,8 @@ void drawGP::draw(QPainter &painter)
   {
       GuidancePointPtr ptr = *it;
       QPointF pf(ptr->point);
-      pf -= geoRect.topLeft();
+      //pf -= geoRect.topLeft();
+      pf -= geoRect.center();
       pf *= scale;
       painter.drawEllipse(pf, 3, 3);
   }
@@ -88,31 +91,29 @@ void drawGeographicalPoint::draw(QPainter &painter)
           QPointF* pPoint = (QPointF*)(pData->pVoid);
           QPointF _p = *pPoint;
           //_p -= GeoShapeData::geoRect.center();
-          _p -= geoRect.topLeft();
+          //_p -= geoRect.topLeft();
+          _p -= geoRect.center();
           _p *= scale;
           painter.drawEllipse(_p, 4, 4);
       }
   }
 }
 
-void drawGeographicalLine::draw(QPainter &painter)
+void drawAirPlaneTrail::draw(QPainter &painter)
 {
-//  QPen pen(QColor(35, 7, 188));
-//  pen.setWidth(1);;
-//  painter.setPen(pen);
-
-//  std::list<shapeData*>::iterator it;
-//  for(it  = GeoShapeData::listShapeData.begin();
-//      it != GeoShapeData::listShapeData.end();
-//      ++ it)
-//    {
-//      shapeData* pData = *it;
-//      if(0 != pData->pVoid && pData->type == shapeData::line)
-//        {
-//          QLineF* pLine = (QLineF*)(pData->pVoid);
-//          pLine->
-//        }
-//    }
+  // display airplane trail
+  QPen pen;
+  QPolygonF qPolygon(GeoShapeData::vtrAirplaneTrail);
+  mypolygon mPolygon;
+  mPolygon.setCore(qPolygon);
+  mPolygon.optimizeCoord(geoRect.center(), scale);
+  QVector<qreal> dashes;
+  dashes << 2 << 2 << 2 << 2;
+  pen.setDashPattern(dashes);
+  pen.setColor(QColor(199, 237, 204));
+  pen.setWidth(2);
+  painter.setPen(pen);
+  painter.drawPolyline(mPolygon.getCore());
 }
 
 void drawGeographicalPolyline::draw(QPainter &painter)
@@ -132,7 +133,8 @@ void drawGeographicalPolyline::draw(QPainter &painter)
             QPolygonF* pPolygon = (QPolygonF*)(pData->pVoid);
             mypolygon polygon;
             polygon.setCore(*pPolygon);
-            polygon.optimizeCoord(geoRect.topLeft(), scale);
+            //polygon.optimizeCoord(geoRect.topLeft(), scale);
+            polygon.optimizeCoord(geoRect.center(), scale);
             painter.drawPolyline(polygon.getCore());
         }
     }
@@ -154,8 +156,8 @@ void drawGeographicalPolygon::draw(QPainter &painter)
           QPolygonF* pPolygon = (QPolygonF*)(pData->pVoid);
           mypolygon polygon;
           polygon.setCore(*pPolygon);
-          polygon.optimizeCoord(geoRect.topLeft(), scale);
-          //polygon.optimizeCoord(GeoShapeData::geoRect.center(), scale);
+          //polygon.optimizeCoord(geoRect.topLeft(), scale);
+          polygon.optimizeCoord(geoRect.center(), scale);
           painter.drawPolygon(polygon.getCore());
       }
   }

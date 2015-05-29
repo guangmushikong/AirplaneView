@@ -19,16 +19,21 @@ public:
   void registerGhtFile(std::string filePath);
   void releaseShapes();
   static void setAirPlane(QPointF pf){ GeoShapeData::setAirPlane(pf); }
+  static void setExposurePoint(QPointF pf){ GeoShapeData::setExposurePoint(pf); }
 
 public:
   void panStart(QPointF p){ panStartP = p; }
   void panEnd(QPointF p);
-  void Zoom(double _scale);
-
+  void Zoom(double _scale, QPoint mouse);
   virtual void translate(QPointF){}
+
+public:
+  virtual QPointF getWorldCoord(QPoint p){ return QPointF(.0, .0); }
+  virtual QPoint  getPixelCoord(QPointF p){ return QPoint(0, 0); }
 
 protected:
   void paintEvent(QPaintEvent* event);
+
 
 signals:
 
@@ -46,10 +51,13 @@ protected:
    * maptype = 0 -- EagleEyeMap
    * maptype = 1 -- DetailedMap
   */
-  int maptype;
-  QPointF panStartP;
-  QRectF  geoRect;
-  double  ZoomInOutScale;
+  int      maptype;
+  QPointF  panStartP;
+  QRectF   geoRect;
+  QPoint   mousePos; // used to zoom
+  double   ZoomInOutScale;
+  bool     bZoom;
+
 };
 
 #endif // PAINTAREA_H

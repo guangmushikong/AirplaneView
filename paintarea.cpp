@@ -1,6 +1,7 @@
 #include "paintarea.h"
 #include <QPainter>
 
+
 PaintArea::PaintArea(QWidget *parent) :
   QWidget(parent)
 {
@@ -15,19 +16,20 @@ PaintArea::PaintArea(QWidget *parent) :
   p = new drawGeographicalPoint();
   mapDrawObject.insert(std::make_pair(shapeData::point, p));
 
-  p = new drawGeographicalLine();
-  mapDrawObject.insert(std::make_pair(shapeData::line, p));
-
   p = new drawGeographicalPolygon();
   mapDrawObject.insert(std::make_pair(shapeData::area, p));
 
   p = new drawGeographicalPolyline();
   mapDrawObject.insert(std::make_pair(shapeData::polyline, p));
 
+  p = new drawAirPlaneTrail();
+  mapDrawObject.insert(std::make_pair(shapeData::airplanetrail, p));
+
   p = new drawAirplane();
   mapDrawObject.insert(std::make_pair(shapeData::airplane, p));
 
   ZoomInOutScale = 1.0;
+  bZoom = false;
 }
 
 PaintArea::~PaintArea()
@@ -45,8 +47,8 @@ PaintArea::~PaintArea()
 void PaintArea::paintEvent(QPaintEvent *event)
 {
   QPainter painter(this);
+  setGeoCoordSys(painter);
   std::map<shapeData::ShapeType, drawObject*>::iterator it;
-  //GeoShapeData::getGeoRect(geoRect);
   for(it = mapDrawObject.begin(); it != mapDrawObject.end(); ++it)
   {
     drawObject* pDraw = it->second;
@@ -61,13 +63,16 @@ void PaintArea::registerShape(void *pVoid, shapeData::ShapeType type, int nNum)
   //calGeoRect(pVoid, type);
   GeoShapeData::registerShape(pVoid, type);
   GeoShapeData::getGeoRect(geoRect);
+  ZoomInOutScale = 1.0;
 }
 
 void PaintArea::releaseShapes()
 {
   GeoShapeData::releaseShape();
+  GeoShapeData::releaseGPs();
   geoRect.setWidth(.0);
   geoRect.setHeight(.0);
+  ZoomInOutScale = 1.0;
 }
 
 void PaintArea::registerGhtFile(std::string filePath)
@@ -81,14 +86,17 @@ void PaintArea::registerGhtFile(std::string filePath)
 
 void PaintArea::panEnd(QPointF p)
 {
-  QPointF transP = (panStartP-p);
+  //QPointF transP = (panStartP-p);
+  QPointF transP = (p-panStartP);
   translate(transP);
 }
 
-void PaintArea::Zoom(double _scale)
+void PaintArea::Zoom(double _scale, QPoint mouse)
 {
   if (_scale > 0)
   {
+    bZoom = true;
+    // mousePos = mouse;
     ZoomInOutScale *= _scale;
     this->update();
   }

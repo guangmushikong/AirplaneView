@@ -13,13 +13,15 @@ public:
   explicit DetailedMap(QWidget* parent = 0);
   ~DetailedMap();
 
-  //test
-  //void drawline();
   virtual void translate(QPointF p);
+
+public:
+  QPointF getWorldCoord(QPoint p);
 
 protected:
   virtual double getDrawScale();
   virtual void setGeoCoordSys(QPainter& painter);
+  void getGeoPixCoordFromOriginCoord(QPoint&);
 };
 
 #endif // DETAILEDMAP_H

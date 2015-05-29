@@ -15,6 +15,7 @@ class GeoShapeData
 {
   friend class drawObject;
   friend class drawAirplane;
+  friend class drawAirPlaneTrail;
   friend class drawGP;
   friend class drawGeographicalPoint;
   friend class drawGeographicalPolyline;
@@ -32,6 +33,7 @@ public:
   static void registerGP(GuidancePointPtr& pPoint);
   static void releaseGPs();
   static void setAirPlane(QPointF p);
+  static void setExposurePoint(QPointF p);
   //static bool getAirPlane(QPointF& p);
   static bool registerRecentFiles(std::string file);
   static void getGeoRect(QRectF& geoRect);
@@ -41,12 +43,13 @@ protected:
   static void registerPoint(QRectF& rect, QPointF point);
 
 protected:
+  static QPointF currentAirplanePos;
   static list<shapeDataPtr> listShapeData;
   static list<GuidancePointPtr> listGPs;
-  //static QPointF airPlane;
-  //static QRectF geoRect;  // Bounding Box of Shape Datas
   static std::set<std::string> setRecentFiles;
-  static std::list<QPointF> listAirplanes;
+  //static std::list<QPointF> listAirplanes;
+  static QVector<QPointF> vtrAirplaneTrail;
+  static std::list<QPointF> listExposurePoint;
 };
 
 #endif // GEOSHAPEDATA_H

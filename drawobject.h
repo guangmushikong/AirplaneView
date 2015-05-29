@@ -40,7 +40,7 @@ public:
   void draw(QPainter& painter);
 };
 
-class drawGeographicalLine : public drawObject
+class drawAirPlaneTrail : public drawObject
 {
 public:
   void draw(QPainter &painter);

@@ -8,8 +8,10 @@ list<shapeDataPtr> GeoShapeData::listShapeData;
 list<GuidancePointPtr> GeoShapeData::listGPs;
 set<string> GeoShapeData::setRecentFiles;
 //QRectF GeoShapeData::geoRect;
-//QPointF GeoShapeData::airPlane;
-list<QPointF> GeoShapeData::listAirplanes;
+QPointF GeoShapeData::currentAirplanePos;
+//list<QPointF> GeoShapeData::listAirplanes;
+QVector<QPointF> GeoShapeData::vtrAirplaneTrail;
+list<QPointF> GeoShapeData::listExposurePoint;
 
 GeoShapeData::GeoShapeData()
 {
@@ -52,12 +54,21 @@ void GeoShapeData::releaseGPs()
       delete (*it);
   }
   listGPs.clear();
+
+  vtrAirplaneTrail.clear();
 }
 
 void GeoShapeData::setAirPlane(QPointF p)
 {
   //airPlane = p;
-	listAirplanes.push_back(p);
+  //listAirplanes.push_back(p);
+  vtrAirplaneTrail.push_back(p);
+  currentAirplanePos = p;
+}
+
+void GeoShapeData::setExposurePoint(QPointF p)
+{
+  listExposurePoint.push_back(p);
 }
 
 //bool GeoShapeData::getAirPlane(QPointF& p)
