@@ -12,7 +12,7 @@ typedef struct shapeData
    * area represents by serious points
    * guidance represents by serious points who have direction
    */
-  enum ShapeType{point, line, area, guidance, polyline, airplane, airplanetrail};
+  enum ShapeType{point, line, area, guidance, polyline, airplane, airplanetrail, guidanceline};
 
   shapeData(void* _data, ShapeType t, int nNums = 1)
   { pVoid = _data; type = t; nNumofShape = nNums; }
@@ -46,12 +46,18 @@ typedef struct GuidancePoint
 typedef struct AirPlane
 {
   QPointF pos;
+  QPointF nextPos;
   double  hgt;
+  double  Fhgt;
   int status;
   int lineIdx;
   int pointIdx;
+  int FlineIdx;
+  int FpointIdx;
   double speed;
   double angle;
+  double aoy;
+  double distance;
 } *AirPlanePtr;
 
 #endif // DATADEFINE_H

@@ -13,7 +13,6 @@ class drawObject
 {
 public:
   virtual void draw(QPainter& painter) = 0;
-  //static void setGeoCoordSys(QPainter& painter);
   void setScale(double _scale){ scale = _scale; }
   void setGeoRect(QRectF _rect){ geoRect = _rect; }
 
@@ -56,6 +55,12 @@ class drawGeographicalPolyline : public drawObject
 {
 public:
     void draw(QPainter &painter);
+};
+
+class drawGuidanceLine : public drawObject
+{
+public:
+  void draw(QPainter &painter);
 };
 
 #endif // DRAWOBJECT_H

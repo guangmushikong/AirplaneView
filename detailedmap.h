@@ -14,6 +14,7 @@ public:
   ~DetailedMap();
 
   virtual void translate(QPointF p);
+  //virtual void move2point(QPointF p);
 
 public:
   QPointF getWorldCoord(QPoint p);

@@ -29,7 +29,9 @@ SOURCES += main.cpp\
     maptool.cpp \
     udpsettingdialog.cpp \
     udpmsgformat.cpp \
-    coordtranslate.cpp
+    coordtranslate.cpp \
+    indicatingmsgwidget.cpp \
+    indicateheadingwidget.cpp
 
 HEADERS  += mainwindow.h \
     myrectf.h \
@@ -43,7 +45,9 @@ HEADERS  += mainwindow.h \
     maptool.h \
     udpsettingdialog.h \
     udpmsgformat.h \
-    coordtranslate.h
+    coordtranslate.h \
+    indicatingmsgwidget.h \
+    indicateheadingwidget.h
 
 FORMS    += mainwindow.ui \
     udpsettingdialog.ui \

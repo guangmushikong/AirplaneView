@@ -3,6 +3,7 @@
 
 #include <QPolygonF>
 #include <QPointF>
+#include <QLineF>
 
 class mypolygon
 {
@@ -14,6 +15,18 @@ public:
 
 private:
   QPolygonF _core;
+};
+
+class MyLine
+{
+public:
+  MyLine();
+  const QLineF getCore(){ return _core; }
+  void setCore(const QLineF& core){ _core = core; }
+  void optimizeCoord(QPointF _trans, double _scale);
+
+private:
+  QLineF _core;
 };
 
 class MyPointF

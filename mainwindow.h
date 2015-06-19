@@ -3,8 +3,10 @@
 
 #include <QMainWindow>
 #include <QMenu>
-#include <QListView>
-#include <QStringListModel>
+//#include <QListView>
+//#include <QStringListModel>
+#include <QTableView>
+#include <QStandardItemModel>
 #include <QUdpSocket>
 #include <sstream>
 #include <QLabel>
@@ -22,6 +24,8 @@ class PaintArea;
 class MapTool;
 class UdpSettingDialog;
 class AirPlane;
+class IndicatingMsgWidget;
+class IndicateHeadingWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -55,22 +59,23 @@ private:
 
 private:
   Ui::MainWindow *ui;
-  QListView* pLegend;
-  QStringListModel* pSLM;
+  QTableView* pLegend;
+  QStandardItemModel* pSIM;
   QMenuBar* pMenuBar;
   PaintArea* pEagleEyePaint;
   PaintArea* pDetailedPaint;
   QRect DetailedPaintR;
   QRect EagleEyePaintR;
-  //MapTool* pMapTool;
   MapTool* pMapZoom;
   MapTool* pMapPan;
   UdpSettingDialog* pUdp;
   QUdpSocket* pSocket;
-  //QStatusBar* pStatusBar;
   QLabel* pStatusLabel;
-  QRubberBand* pRubberBand;
+  //QRubberBand* pRubberBand;
   QLabel* pPlaneMsgLabel;
+  IndicatingMsgWidget* pIndicatingMsgWidget;      // indicate height
+  IndicateHeadingWidget* pIndicatingHeadWidget;   // indicate heading
+
 
 private:
   QPoint  rubberBandStart;

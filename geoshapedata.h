@@ -20,6 +20,7 @@ class GeoShapeData
   friend class drawGeographicalPoint;
   friend class drawGeographicalPolyline;
   friend class drawGeographicalPolygon;
+  friend class drawGuidanceLine;
   friend class EagleEyeMap;
   friend class DetailedMap;
 public:
@@ -34,9 +35,11 @@ public:
   static void releaseGPs();
   static void setAirPlane(QPointF p);
   static void setExposurePoint(QPointF p);
-  //static bool getAirPlane(QPointF& p);
   static bool registerRecentFiles(std::string file);
   static void getGeoRect(QRectF& geoRect);
+  static void setHeadingAngle(double _angle);
+  static void clearRecentFiles();
+  static void setGuidanceLine(QPointF beg, QPointF end);
 
 protected:
   static void recalcBoundingBox(QRectF& geoRect, void* pVoid, shapeData::ShapeType t);
@@ -47,9 +50,10 @@ protected:
   static list<shapeDataPtr> listShapeData;
   static list<GuidancePointPtr> listGPs;
   static std::set<std::string> setRecentFiles;
-  //static std::list<QPointF> listAirplanes;
   static QVector<QPointF> vtrAirplaneTrail;
   static std::list<QPointF> listExposurePoint;
+  static double headingAngle;
+  static QLineF guidanceLine;
 };
 
 #endif // GEOSHAPEDATA_H

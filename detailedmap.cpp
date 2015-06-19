@@ -9,6 +9,11 @@ DetailedMap::DetailedMap(QWidget* parent):PaintArea(parent)
   maptype = 1;
   drawObject* pDraw = new drawGP();
   mapDrawObject.insert(std::make_pair(shapeData::guidance, pDraw));
+
+  //pDraw = new drawAirplane();
+  //mapDrawObject.insert(std::make_pair(shapeData::airplane, pDraw));
+  pDraw = new drawGuidanceLine();
+  mapDrawObject.insert(std::make_pair(shapeData::guidanceline, pDraw));
 }
 
 DetailedMap::~DetailedMap()
@@ -53,8 +58,6 @@ void DetailedMap::getGeoPixCoordFromOriginCoord(QPoint & p)
 {
   p.setX(p.x()-300);
   p.setY(300-p.y());
-  //CoordTranslate<QPoint> ct;
-  //ct.Pixel2World();
 }
 
 QPointF DetailedMap::getWorldCoord(QPoint p)

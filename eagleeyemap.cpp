@@ -5,6 +5,9 @@
 EagleEyeMap::EagleEyeMap(QWidget* parent) : PaintArea(parent)
 {
   maptype = 0;
+
+  //drawObject* pDraw = new drawAirplane();
+  //mapDrawObject.insert(std::make_pair(shapeData::airplane, pDraw));
 }
 
 EagleEyeMap::~EagleEyeMap()

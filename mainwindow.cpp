@@ -7,13 +7,17 @@
 #include <QMouseEvent>
 #include <QStyle>
 #include <QDir>
+#include <QHeaderView>
 #include "paintarea.h"
 #include "eagleeyemap.h"
 #include "detailedmap.h"
+#include "indicatingmsgwidget.h"
+#include "indicateheadingwidget.h"
 #include "maptool.h"
 #include "udpsettingdialog.h"
 #include "udpmsgformat.h"
 #include "datadefine.h"
+
 
 #include <fstream>
 
@@ -81,16 +85,34 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Plane Msg Label
   pPlaneMsgLabel = new QLabel(this);
-  pPlaneMsgLabel->setGeometry(710, 24, 100, 100);
-  pPlaneMsgLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+  pPlaneMsgLabel->setGeometry(610, 24, 200, 100);
+  //pPlaneMsgLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+  QFont font;
+  font.setPointSize(16);
+  pPlaneMsgLabel->setFont(font);
+  QPalette palette;
+  palette.setColor(QPalette::WindowText, Qt::white);
+  pPlaneMsgLabel->setPalette(palette);
+
+  // Indicating heading widget
+  pIndicatingHeadWidget = new IndicateHeadingWidget(this);
+  pIndicatingHeadWidget->setGeometry(5, 229, 200, 200);
+
+  // Plane Indicating Msg Widget
+  //pIndicatingMsgWidget = new IndicatingMsgWidget(this);
+  //pIndicatingMsgWidget->setGeometry(5, 229, 200, 200);
+  pIndicatingMsgWidget = new IndicatingMsgWidget(pDetailedPaint);
+  pIndicatingMsgWidget->setGeometry(0, 0, 50, 200);
 
   // Legend
-  pLegend = new QListView(this);
-  pLegend->setGeometry(5, 229, 200, 395);
+  //pLegend = new QListView(this);
+  //pLegend->setGeometry(5, 229, 200, 395);
+  pLegend = new QTableView(this);
+  pLegend->setGeometry(5, 434, 200, 190);
   initializeLegend();
 
   // RubberBand
-  pRubberBand = new QRubberBand(QRubberBand::Line, pEagleEyePaint);
+  //pRubberBand = new QRubberBand(QRubberBand::Line, pEagleEyePaint);
 
   pUdp = new UdpSettingDialog(this);
 
@@ -109,12 +131,14 @@ MainWindow::~MainWindow()
 {
   delete pMapZoom;
   delete pMapPan;
-  delete pRubberBand;
-  delete pSLM;
+  //delete pRubberBand;
+  //delete pSLM;
+  delete pSIM;
   delete pLegend;
   delete pMenuBar;
   delete pStatusLabel;
   delete pPlaneMsgLabel;
+  delete pIndicatingMsgWidget;
   delete pEagleEyePaint;
   delete pDetailedPaint;
   delete pUdp;
@@ -214,11 +238,11 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
                     QString::number(worldPos.y()));
       pStatusLabel->setText(statusMsg);
   }
-  else if (pEagleEyePaint->geometry().contains(event->pos()))
-  {
-      pRubberBand->setGeometry(QRect(rubberBandStart, event->pos()).normalized());
-      pRubberBand->show();
-  }
+  //else if (pEagleEyePaint->geometry().contains(event->pos()))
+  //{
+  //    pRubberBand->setGeometry(QRect(rubberBandStart, event->pos()).normalized());
+  //    pRubberBand->show();
+  //}
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -311,23 +335,46 @@ void MainWindow::on_action_udp()
   {
       pSocket->abort();
       pSocket->bind(pUdp->getPort(), QUdpSocket::ShareAddress);
-      connect(pSocket, SIGNAL(readyRead()),
-              this, SLOT(readPendingDatagrams()));
+      connect(pSocket,
+              SIGNAL(readyRead()),
+              this,
+              SLOT(readPendingDatagrams()));
   }
 }
 
 void MainWindow::initializeLegend()
 {
-  //pLegend->setPalette(QPalette(QColor(128, 128, 128)));
-  //pLegend->setAutoFillBackground(true);
-  QStringList sl;
-  sl.push_back("Guidance Point   -- Green");
-  sl.push_back("Guidance Line    -- Blue");
-  sl.push_back("Exposure Point   -- White");
-  sl.push_back("Current Airplane -- Red");
-  sl.push_back("Airplane Trail -- Light Green");
-  pSLM = new QStringListModel(sl);
-  pLegend->setModel(pSLM);
+  pLegend->setPalette(QPalette(QColor(0, 0, 0)));
+  pLegend->verticalHeader()->setVisible(false);
+  pLegend->horizontalHeader()->setVisible(false);
+
+  QStandardItem* pItem;
+  pSIM = new QStandardItemModel();
+  pSIM->setColumnCount(2);
+  pSIM->setRowCount(3);
+  pSIM->setItem(0, 0, new QStandardItem(tr("引导信息")));
+  pItem = new QStandardItem();
+  pItem->setBackground(QBrush(QColor(0, 255, 0)));
+  pSIM->setItem(0, 1, pItem);
+  pSIM->setItem(1, 0, new QStandardItem(tr("曝光信息")));
+  pItem = new QStandardItem();
+  pItem->setBackground(QBrush(QColor(255, 255, 255)));
+  pSIM->setItem(1, 1, pItem);
+  pSIM->setItem(2, 0, new QStandardItem(tr("航迹信息")));
+  pItem = new QStandardItem();
+  pItem->setBackground(QBrush(QColor(255, 0, 0)));
+  pSIM->setItem(2, 1, pItem);
+  pSIM->setItem(3, 0, new QStandardItem(tr("航线角度")));
+  pItem = new QStandardItem();
+  pItem->setBackground(QBrush(QColor(0, 0, 255)));
+  pSIM->setItem(3, 1, pItem);
+  pSIM->setItem(4, 0, new QStandardItem(tr("实际角度")));
+  pItem = new QStandardItem();
+  pItem->setBackground(QBrush(QColor(QColor(255, 0, 255))));
+  pSIM->setItem(4, 1, pItem);
+
+
+  pLegend->setModel(pSIM);
 }
 
 void MainWindow::readPendingDatagrams()
@@ -344,11 +391,6 @@ void MainWindow::readPendingDatagrams()
                             &sender, &senderPort);
       socketdata = std::string(datagram.data());
       processTheDatagram(socketdata);
-
-      //QString qSocket(datagram.data());
-      //std::string planeMsg(datagram.data());
-      //while (planeMsg.find(''))
-      //pPlaneMsgLabel->setText(qSocket);
   }
 }
 
@@ -357,25 +399,34 @@ void MainWindow::processTheDatagram(std::string data)
   AirPlane ap;
   if (getAirPlaneMsg(data, ap))
   {
+      pDetailedPaint->move2point(ap.pos);
+      pEagleEyePaint->move2point(ap.pos);
+
       PaintArea::setAirPlane(ap.pos);
+      PaintArea::setHeadingAngle(ap.angle);
+      PaintArea::setGuidanceLine(ap.pos, ap.nextPos);
       if (ap.status){ PaintArea::setExposurePoint(ap.pos); }
       pDetailedPaint->update();
       pEagleEyePaint->update();
 
-      double x = ap.pos.x();
-      double y = ap.pos.y();
-      double z = ap.hgt;
+      //double x = ap.pos.x();
+      //double y = ap.pos.y();
+      //double z = ap.hgt;
       double speed = ap.speed;
       double angle = ap.angle;
       QString labelMsg("");
       labelMsg += QString("Line: ") + QString::number(ap.lineIdx) + QString("\r\n");
       labelMsg += QString("Point: ") + QString::number(ap.pointIdx) + QString("\r\n");
-      labelMsg += QString("x: ") + QString::number(x, 'g', 9) + QString("\r\n");
-      labelMsg += QString("y: ") + QString::number(y, 'g', 9) + QString("\r\n");
-      labelMsg += QString("z: ") + QString::number(z, 'g', 9) + QString("\r\n");
+      //labelMsg += QString("x: ") + QString::number(x, 'g', 9) + QString("\r\n");
+      //labelMsg += QString("y: ") + QString::number(y, 'g', 9) + QString("\r\n");
+      //labelMsg += QString("z: ") + QString::number(z, 'g', 9) + QString("\r\n");
       labelMsg += QString("vel: ") + QString::number(speed, 'g', 9) + QString("\r\n");
       labelMsg += QString("az: ") + QString::number(angle, 'g', 9);
       pPlaneMsgLabel->setText(labelMsg);
+
+      pIndicatingMsgWidget->setHeight(int(ap.hgt));
+
+      pIndicatingHeadWidget->setAngle(ap.angle - 10, ap.angle);
   }
 }
 
@@ -385,8 +436,11 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     return false;
 
   double dlon, dlat, dhgt, dvel, daz;
+  double dFlon, dFlat, dFhgt, daoy, dDistan;
   int nstatus, nLineIdx, nPointIdx;
+  int nFLineIdx, nFPointIdx;
   std::string time, lon, lat, hgt, vel, az, status, lineIdx, pointIdx;
+  std::string flineIdx, fpointIdx, flon, flat, fhgt, aoy, distan;
 
   while (std::string::npos != data.find(","))
   {
@@ -397,7 +451,8 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
   {
     iss.clear();
     iss.str(data);
-    iss >> time >> lon >> lat >> hgt >> vel >> az >> status >> lineIdx >> pointIdx;
+    iss >> time >> lon >> lat >> hgt >> vel >> az >> status >> lineIdx >> pointIdx
+           >> flineIdx >> fpointIdx >> flon >> flat >> fhgt >> aoy >> distan;
 
     lon.replace(lon.find(":"), 1, " ");
     iss.clear();
@@ -446,6 +501,48 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     iss.str(pointIdx);
     iss >> pointIdx >> nPointIdx;
     ap.pointIdx = nPointIdx;
+
+    flineIdx.replace(flineIdx.find(":"), 1, " ");
+    iss.clear();
+    iss.str(flineIdx);
+    iss >> flineIdx >> nFLineIdx;
+    ap.FlineIdx = nFLineIdx;
+
+    fpointIdx.replace(fpointIdx.find(":"), 1, " ");
+    iss.clear();
+    iss.str(fpointIdx);
+    iss >> fpointIdx >> nFPointIdx;
+    ap.FpointIdx = nFPointIdx;
+
+    flon.replace(flon.find(":"), 1, " ");
+    iss.clear();
+    iss.str(flon);
+    iss >> flon >> dFlon;
+    ap.nextPos.setX(dFlon);
+
+    flat.replace(flat.find(":"), 1, " ");
+    iss.clear();
+    iss.str(flat);
+    iss >> flat >> dFlat;
+    ap.nextPos.setY(dFlat);
+
+    fhgt.replace(fhgt.find(":"), 1, " ");
+    iss.clear();;
+    iss.str(fhgt);
+    iss >> fhgt >> dFhgt;
+    ap.Fhgt = dFhgt;
+
+    aoy.replace(aoy.find(":"), 1, " ");
+    iss.clear();
+    iss.str(aoy);
+    iss >> aoy >> daoy;
+    ap.aoy = daoy;
+
+    distan.replace(distan.find(":"), 1, " ");
+    iss.clear();
+    iss.str(distan);
+    iss >> distan >> dDistan;
+    ap.distance = dDistan;
   }
   catch(...)
   {
@@ -454,11 +551,11 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     runtimelog += std::string("/runtime.log");
     std::ofstream outfile(runtimelog, std::ios::app);
     if (outfile.is_open())
-      {
+    {
         outfile << "Message format("
                 << data << ") received by UDPSocket isn't right..."
                 << std::endl;
-      }
+    }
 
     return false;
   }

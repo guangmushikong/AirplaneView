@@ -12,6 +12,8 @@ QPointF GeoShapeData::currentAirplanePos;
 //list<QPointF> GeoShapeData::listAirplanes;
 QVector<QPointF> GeoShapeData::vtrAirplaneTrail;
 list<QPointF> GeoShapeData::listExposurePoint;
+double GeoShapeData::headingAngle;
+QLineF GeoShapeData::guidanceLine;
 
 GeoShapeData::GeoShapeData()
 {
@@ -233,4 +235,19 @@ void GeoShapeData::getGeoRect(QRectF& geoRect)
 		shapeDataPtr ptr = *it;
 		recalcBoundingBox(geoRect, ptr->pVoid, ptr->type);
 	}
+}
+
+void GeoShapeData::setHeadingAngle(double _angle)
+{
+  headingAngle = _angle;
+}
+
+void GeoShapeData::clearRecentFiles()
+{
+  setRecentFiles.clear();
+}
+
+void GeoShapeData::setGuidanceLine(QPointF beg, QPointF end)
+{
+  guidanceLine.setLine(beg.x(), beg.y(), end.x(), end.y());
 }

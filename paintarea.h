@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <map>
 #include <set>
+#include <QLabel>
 #include "drawobject.h"
 #include "geoshapedata.h"
 
@@ -20,12 +21,15 @@ public:
   void releaseShapes();
   static void setAirPlane(QPointF pf){ GeoShapeData::setAirPlane(pf); }
   static void setExposurePoint(QPointF pf){ GeoShapeData::setExposurePoint(pf); }
+  static void setHeadingAngle(double _angle){ GeoShapeData::setHeadingAngle(_angle); }
+  static void setGuidanceLine(QPointF beg, QPointF end){ GeoShapeData::setGuidanceLine(beg, end);}
 
 public:
   void panStart(QPointF p){ panStartP = p; }
   void panEnd(QPointF p);
   void Zoom(double _scale, QPoint mouse);
   virtual void translate(QPointF){}
+  virtual void move2point(QPointF); // Keep CCP in the viewport
 
 public:
   virtual QPointF getWorldCoord(QPoint p){ return QPointF(.0, .0); }
@@ -39,12 +43,13 @@ signals:
 
 protected:
   virtual double getDrawScale() = 0;
+  virtual double getRealScale();
   virtual void setGeoCoordSys(QPainter& painter) = 0;
+  virtual void paintLabelScale(QPainter& painter);
 
 protected:
   std::map<shapeData::ShapeType, drawObject*> mapDrawObject;
-  //std::set<std::string> setRecentFiles;
-
+  QLabel* pLabelScale;
 
 protected:
   /*

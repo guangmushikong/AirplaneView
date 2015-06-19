@@ -8,7 +8,8 @@ udpmsgformat::udpmsgformat(QWidget *parent) :
   ui->setupUi(this);
   QString qstr = "The Udp Message's format is like below: ";
   ui->textEdit->append(qstr);
-  qstr = "'time:xxx,lon:xxx,lat:xxx,hgt:xxx,vel:xxx,az:xxx,status:xxx,lineIndex:xxx,pointIndex:xxx'. ";
+  qstr = "'time:xxx,lon:xxx,lat:xxx,hgt:xxx,vel:xxx,az:xxx,status:xxx,lineIndex:xxx,pointIndex:xxx,"
+      "flineIndex:xxx,fpointIndex:xxx,flon:xxx,flat:xxx,fhgt:xxx,aoy:xxx,distan:xxx'. ";
   ui->textEdit->append(qstr);
   qstr = "And the program could cope with the length of prefix(such as time/lon).";
   ui->textEdit->append(qstr);

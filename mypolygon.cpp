@@ -15,6 +15,23 @@ void mypolygon::optimizeCoord(QPointF _trans, double _scale)
   }
 }
 
+MyLine::MyLine()
+{}
+
+void MyLine::optimizeCoord(QPointF _trans, double _scale)
+{
+    QPointF p1 = _core.p1();
+    p1 -= _trans;
+    p1 *= _scale;
+
+    QPointF p2 = _core.p2();
+    p2 -= _trans;
+    p2 *= _scale;
+
+    _core.setP1(p1);
+    _core.setP2(p2);
+}
+
 void MyPointF::optimizeCoord(QPointF _trans, double _scale)
 {
 	_core -= _trans;

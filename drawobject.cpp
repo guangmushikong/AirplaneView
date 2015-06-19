@@ -6,6 +6,8 @@
 #include "mypolygon.h"
 #include "geoshapedata.h"
 
+#define PI 3.1415926
+
 
 //void drawObject::setGeoCoordSys(QPainter &painter)
 //{
@@ -31,6 +33,8 @@ void drawAirplane::draw(QPainter &painter)
   painter.setBrush(brush);
   painter.setPen(Qt::NoPen);
   QPointF pf;
+
+  // Exposure Points
   list<QPointF>::iterator it;
   for (it  = GeoShapeData::listExposurePoint.begin();
        it != GeoShapeData::listExposurePoint.end(); ++it)
@@ -47,9 +51,33 @@ void drawAirplane::draw(QPainter &painter)
     brush.setColor(QColor(255, 0, 0));
     painter.setBrush(brush);
     pf = GeoShapeData::currentAirplanePos;
-    pf -= geoRect.center();
-    pf *= scale;
-    painter.drawEllipse(pf, 3, 3);
+
+    //           P1
+    //           / \
+    //          / * \ CCP
+    //         /     \
+    //        P2     P3
+
+    QPointF P1, P2, P3;
+    double headingAngle = GeoShapeData::headingAngle;
+    double dLength      = 6.0/scale; /*0.0002;*/
+
+    // calculate P1's coordinate using CCP
+    P1.setX(sin(headingAngle*PI/180.0)*dLength + pf.x());
+    P1.setY(cos(headingAngle*PI/180.0)*dLength + pf.y());
+    // calculate P2\P3 using P1
+    P2.setX(P1.x() - sin((headingAngle-20)*PI/180.0)*2*dLength*1.414);
+    P2.setY(P1.y() - cos((headingAngle-20)*PI/180.0)*2*dLength*1.414);
+    P3.setX(P1.x() - sin((headingAngle+20)*PI/180.0)*2*dLength*1.414);
+    P3.setY(P1.y() - cos((headingAngle+20)*PI/180.0)*2*dLength*1.414);
+
+    QVector<QPointF> points;
+    points << P1 << P2 << P3;
+    QPolygonF qPolygon(points);
+    mypolygon mPolygon;
+    mPolygon.setCore(qPolygon);
+    mPolygon.optimizeCoord(geoRect.center(), scale);
+    painter.drawPolygon(mPolygon.getCore());
   }
 }
 
@@ -65,7 +93,6 @@ void drawGP::draw(QPainter &painter)
   {
       GuidancePointPtr ptr = *it;
       QPointF pf(ptr->point);
-      //pf -= geoRect.topLeft();
       pf -= geoRect.center();
       pf *= scale;
       painter.drawEllipse(pf, 3, 3);
@@ -90,8 +117,6 @@ void drawGeographicalPoint::draw(QPainter &painter)
       {
           QPointF* pPoint = (QPointF*)(pData->pVoid);
           QPointF _p = *pPoint;
-          //_p -= GeoShapeData::geoRect.center();
-          //_p -= geoRect.topLeft();
           _p -= geoRect.center();
           _p *= scale;
           painter.drawEllipse(_p, 4, 4);
@@ -110,7 +135,8 @@ void drawAirPlaneTrail::draw(QPainter &painter)
   QVector<qreal> dashes;
   dashes << 2 << 2 << 2 << 2;
   pen.setDashPattern(dashes);
-  pen.setColor(QColor(199, 237, 204));
+  //pen.setColor(QColor(199, 237, 204));
+  pen.setColor(QColor(255, 0, 0));
   pen.setWidth(2);
   painter.setPen(pen);
   painter.drawPolyline(mPolygon.getCore());
@@ -118,7 +144,8 @@ void drawAirPlaneTrail::draw(QPainter &painter)
 
 void drawGeographicalPolyline::draw(QPainter &painter)
 {
-    QPen pen(QColor(35, 7, 188));
+    //QPen pen(QColor(35, 7, 188));
+    QPen pen(QColor(0, 255, 0));
     pen.setWidth(1);
     painter.setPen(pen);
 
@@ -133,7 +160,6 @@ void drawGeographicalPolyline::draw(QPainter &painter)
             QPolygonF* pPolygon = (QPolygonF*)(pData->pVoid);
             mypolygon polygon;
             polygon.setCore(*pPolygon);
-            //polygon.optimizeCoord(geoRect.topLeft(), scale);
             polygon.optimizeCoord(geoRect.center(), scale);
             painter.drawPolyline(polygon.getCore());
         }
@@ -156,22 +182,25 @@ void drawGeographicalPolygon::draw(QPainter &painter)
           QPolygonF* pPolygon = (QPolygonF*)(pData->pVoid);
           mypolygon polygon;
           polygon.setCore(*pPolygon);
-          //polygon.optimizeCoord(geoRect.topLeft(), scale);
           polygon.optimizeCoord(geoRect.center(), scale);
           painter.drawPolygon(polygon.getCore());
       }
   }
 }
 
-//void drawAirPlane::draw(QPainter &painter)
-//{
-//  if (airPlane != QPointF(.0, .0))
-//    {
-//      QBrush PlaneBrush(QColor(240, 0, 0));
-//      painter.setBrush(PlaneBrush);
-//      painter.setPen(Qt::NoPen);
-//      airPlane -= geoRect.topLeft();
-//      airPlane *= scale;
-//      painter.drawEllipse(airPlane, 4, 4);
-//    }
-//}
+void drawGuidanceLine::draw(QPainter &painter)
+{
+  QPen pen(QColor(255, 255, 255));
+  pen.setWidth(2);
+  painter.setPen(pen);
+
+  QLineF line = GeoShapeData::guidanceLine;
+
+  if (!line.isNull())
+  {
+    MyLine mLine;
+    mLine.setCore(line);
+    mLine.optimizeCoord(geoRect.center(), scale);
+    painter.drawLine(mLine.getCore());
+  }
+}
