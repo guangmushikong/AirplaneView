@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     udpmsgformat.cpp \
     coordtranslate.cpp \
     indicatingmsgwidget.cpp \
-    indicateheadingwidget.cpp
+    indicateheadingwidget.cpp \
+    uiparamconfig.cpp
 
 HEADERS  += mainwindow.h \
     myrectf.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     udpmsgformat.h \
     coordtranslate.h \
     indicatingmsgwidget.h \
-    indicateheadingwidget.h
+    indicateheadingwidget.h \
+    uiparamconfig.h
 
 FORMS    += mainwindow.ui \
     udpsettingdialog.ui \

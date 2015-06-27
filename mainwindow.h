@@ -44,6 +44,7 @@ private slots:
   void on_action_zoom();
   void on_action_udp();
   void on_action_udp_msg();
+  void on_action_view_set();
   void readPendingDatagrams();
 
 protected:
@@ -62,6 +63,7 @@ private:
   QTableView* pLegend;
   QStandardItemModel* pSIM;
   QMenuBar* pMenuBar;
+  QActionGroup* pViewDirGroup;
   PaintArea* pEagleEyePaint;
   PaintArea* pDetailedPaint;
   QRect DetailedPaintR;

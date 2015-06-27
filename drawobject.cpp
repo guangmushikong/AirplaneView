@@ -71,8 +71,12 @@ void drawAirplane::draw(QPainter &painter)
     P3.setX(P1.x() - sin((headingAngle+20)*PI/180.0)*2*dLength*1.414);
     P3.setY(P1.y() - cos((headingAngle+20)*PI/180.0)*2*dLength*1.414);
 
+    QPointF PCenter;
+    PCenter.setX((P1.x()+P2.x()+P3.x())/3);
+    PCenter.setY((P1.y()+P2.y()+P3.y())/3);
+
     QVector<QPointF> points;
-    points << P1 << P2 << P3;
+    points << P1 << P2 << PCenter << P3;
     QPolygonF qPolygon(points);
     mypolygon mPolygon;
     mPolygon.setCore(qPolygon);
@@ -95,7 +99,8 @@ void drawGP::draw(QPainter &painter)
       QPointF pf(ptr->point);
       pf -= geoRect.center();
       pf *= scale;
-      painter.drawEllipse(pf, 3, 3);
+      painter.drawEllipse(pf, 5, 5);
+      //painter.drawRect(pf.x(), pf.y(), 10, 10);
   }
 }
 
@@ -107,27 +112,28 @@ void drawGeographicalPoint::draw(QPainter &painter)
   painter.setBrush(PlaneBrush);
   painter.setPen(Qt::NoPen);
 
-  // display the guidance line
-  std::list<shapeData*>::iterator it;
-  for(it  = GeoShapeData::listShapeData.begin();
-      it != GeoShapeData::listShapeData.end(); ++it)
-  {
-      shapeData* pData = *it;
-      if(0 != pData->pVoid && pData->type == shapeData::point)
-      {
-          QPointF* pPoint = (QPointF*)(pData->pVoid);
-          QPointF _p = *pPoint;
-          _p -= geoRect.center();
-          _p *= scale;
-          painter.drawEllipse(_p, 4, 4);
-      }
-  }
+//  // display the guidance line
+//  std::list<shapeData*>::iterator it;
+//  for(it  = GeoShapeData::listShapeData.begin();
+//      it != GeoShapeData::listShapeData.end(); ++it)
+//  {
+//      shapeData* pData = *it;
+//      if(0 != pData->pVoid && pData->type == shapeData::point)
+//      {
+//          QPointF* pPoint = (QPointF*)(pData->pVoid);
+//          QPointF _p = *pPoint;
+//          _p -= geoRect.center();
+//          _p *= scale;
+//          painter.drawEllipse(_p, 4, 4);
+//      }
+//  }
 }
 
 void drawAirPlaneTrail::draw(QPainter &painter)
 {
   // display airplane trail
   QPen pen;
+  //pen.setCapStyle(Qt::RoundCap);
   QPolygonF qPolygon(GeoShapeData::vtrAirplaneTrail);
   mypolygon mPolygon;
   mPolygon.setCore(qPolygon);
@@ -136,7 +142,8 @@ void drawAirPlaneTrail::draw(QPainter &painter)
   dashes << 2 << 2 << 2 << 2;
   pen.setDashPattern(dashes);
   //pen.setColor(QColor(199, 237, 204));
-  pen.setColor(QColor(255, 0, 0));
+  //pen.setColor(QColor(255, 0, 0));
+  pen.setColor(QColor(255, 255, 255, 125));
   pen.setWidth(2);
   painter.setPen(pen);
   painter.drawPolyline(mPolygon.getCore());
@@ -145,7 +152,8 @@ void drawAirPlaneTrail::draw(QPainter &painter)
 void drawGeographicalPolyline::draw(QPainter &painter)
 {
     //QPen pen(QColor(35, 7, 188));
-    QPen pen(QColor(0, 255, 0));
+    QPen pen(QColor(0, 255, 0, 125));
+    //pen.setCapStyle(Qt::RoundCap);
     pen.setWidth(1);
     painter.setPen(pen);
 
@@ -190,7 +198,8 @@ void drawGeographicalPolygon::draw(QPainter &painter)
 
 void drawGuidanceLine::draw(QPainter &painter)
 {
-  QPen pen(QColor(255, 255, 255));
+  QPen pen(QColor(0, 0, 255));
+  //pen.setCapStyle(Qt::RoundCap);
   pen.setWidth(2);
   painter.setPen(pen);
 

@@ -3,6 +3,7 @@
 
 
 #include <QPointF>
+#include <string>
 
 typedef struct shapeData
 {
@@ -50,14 +51,16 @@ typedef struct AirPlane
   double  hgt;
   double  Fhgt;
   int status;
-  int lineIdx;
-  int pointIdx;
-  int FlineIdx;
-  int FpointIdx;
+  std::string cLineIdx;
+  std::string cPointIdx;
+  std::string FlineIdx;
+  std::string FpointIdx;
   double speed;
   double angle;
   double aoy;
   double distance;
+  double az;
+  double designAngle;
 } *AirPlanePtr;
 
 #endif // DATADEFINE_H

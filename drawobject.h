@@ -21,18 +21,21 @@ protected:
   QRectF geoRect;
 };
 
+// exposure point and CCP
 class drawAirplane : public drawObject
 {
 public:
   void draw(QPainter &painter);
 };
 
+// guidance point
 class drawGP : public drawObject
 {
 public:
   void draw(QPainter &painter);
 };
 
+//
 class drawGeographicalPoint : public drawObject
 {
 public:

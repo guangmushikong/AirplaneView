@@ -34,3 +34,22 @@ void drawAirPlane::draw(QPainter &painter,
                     painter.viewport().width(),
                     painter.viewport().height());
 }
+
+
+  QPainter painter(this);
+  //QPainter painter;
+  //painter.begin(pBufferMap);
+  setGeoCoordSys(painter);
+  std::map<shapeData::ShapeType, drawObject*>::iterator it;
+  //GeoShapeData::getGeoRect(geoRect);
+  for(it = mapDrawObject.begin(); it != mapDrawObject.end(); ++it)
+  {
+    drawObject* pDraw = it->second;
+    pDraw->setGeoRect(geoRect);
+    pDraw->setScale(getDrawScale());
+    pDraw->draw(painter);
+  }
+  //painter.end();
+  //painter.begin(this);
+  //painter.drawPixmap(QPoint(0, 0), *pBufferMap);
+  //painter.end();

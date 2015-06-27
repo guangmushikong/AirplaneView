@@ -17,6 +17,7 @@
 #include "udpsettingdialog.h"
 #include "udpmsgformat.h"
 #include "datadefine.h"
+#include "uiparamconfig.h"
 
 
 #include <fstream>
@@ -46,6 +47,19 @@ MainWindow::MainWindow(QWidget *parent) :
   pAction = pMenu->addAction(tr("Exit"));
   pAction->setShortcut(QKeySequence(tr("Alt+F4")));
   connect(pAction, SIGNAL(triggered()), this, SLOT(on_action_exit()) );
+  // Menu - View
+  pViewDirGroup = new QActionGroup(this);
+  pViewDirGroup->setExclusive(true);
+  pMenu = pMenuBar->addMenu(tr("&View"));
+  pAction = pMenu->addAction(tr("PolarHead"));
+  pViewDirGroup->addAction(pAction);
+  pAction->setCheckable(true);
+  pAction->setChecked(true);
+  connect(pAction, SIGNAL(triggered()), this, SLOT(on_action_view_set()) );
+  pAction = pMenu->addAction(tr("PlaneHead"));
+  pAction->setCheckable(true);
+  pViewDirGroup->addAction(pAction);
+  connect(pAction, SIGNAL(triggered()), this, SLOT(on_action_view_set()) );
 //  // Menu - View
 //  pMenu = pMenuBar->addMenu(tr("&View"));
 //  pAction = pMenu->addAction(tr("Normal"));
@@ -85,10 +99,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
   // Plane Msg Label
   pPlaneMsgLabel = new QLabel(this);
-  pPlaneMsgLabel->setGeometry(610, 24, 200, 100);
+  pPlaneMsgLabel->setGeometry(590, 24, 220, 200);
   //pPlaneMsgLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
   QFont font;
-  font.setPointSize(16);
+  font.setPointSize(17);
   pPlaneMsgLabel->setFont(font);
   QPalette palette;
   palette.setColor(QPalette::WindowText, Qt::white);
@@ -135,6 +149,7 @@ MainWindow::~MainWindow()
   //delete pSLM;
   delete pSIM;
   delete pLegend;
+  delete pViewDirGroup;
   delete pMenuBar;
   delete pStatusLabel;
   delete pPlaneMsgLabel;
@@ -214,6 +229,30 @@ void MainWindow::on_action_udp_msg()
 {
   udpmsgformat dlg;
   dlg.exec();
+}
+
+void MainWindow::on_action_view_set()
+{
+  if (pMenuBar)
+  {
+    QAction* pAction = pViewDirGroup->checkedAction();
+    QString text = pAction->text();
+    ViewDirection dir;
+    if (text == "PolarHead")
+    {
+        dir = PolarHeading;
+    }
+    else if (text == "PlaneHead")
+    {
+        dir = PlaneHeading;
+    }
+
+    if (UIParamConfig::getViewDirection() != dir)
+    {
+      UIParamConfig::setViewDirection(dir);
+      update();
+    }
+  }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
@@ -352,7 +391,7 @@ void MainWindow::initializeLegend()
   pSIM = new QStandardItemModel();
   pSIM->setColumnCount(2);
   pSIM->setRowCount(3);
-  pSIM->setItem(0, 0, new QStandardItem(tr("引导信息")));
+  pSIM->setItem(0, 0, new QStandardItem(tr("设计信息")));
   pItem = new QStandardItem();
   pItem->setBackground(QBrush(QColor(0, 255, 0)));
   pSIM->setItem(0, 1, pItem);
@@ -362,16 +401,16 @@ void MainWindow::initializeLegend()
   pSIM->setItem(1, 1, pItem);
   pSIM->setItem(2, 0, new QStandardItem(tr("航迹信息")));
   pItem = new QStandardItem();
-  pItem->setBackground(QBrush(QColor(255, 0, 0)));
+  pItem->setBackground(QBrush(QColor(255, 255, 255, 125)));
   pSIM->setItem(2, 1, pItem);
-  pSIM->setItem(3, 0, new QStandardItem(tr("航线角度")));
-  pItem = new QStandardItem();
-  pItem->setBackground(QBrush(QColor(0, 0, 255)));
-  pSIM->setItem(3, 1, pItem);
-  pSIM->setItem(4, 0, new QStandardItem(tr("实际角度")));
-  pItem = new QStandardItem();
-  pItem->setBackground(QBrush(QColor(QColor(255, 0, 255))));
-  pSIM->setItem(4, 1, pItem);
+  //pSIM->setItem(3, 0, new QStandardItem(tr("航线角度")));
+  //pItem = new QStandardItem();
+  //pItem->setBackground(QBrush(QColor(0, 0, 255)));
+  //pSIM->setItem(3, 1, pItem);
+  //pSIM->setItem(4, 0, new QStandardItem(tr("实际角度")));
+  //pItem = new QStandardItem();
+  //pItem->setBackground(QBrush(QColor(QColor(255, 0, 255))));
+  //pSIM->setItem(4, 1, pItem);
 
 
   pLegend->setModel(pSIM);
@@ -415,18 +454,22 @@ void MainWindow::processTheDatagram(std::string data)
       double speed = ap.speed;
       double angle = ap.angle;
       QString labelMsg("");
-      labelMsg += QString("Line: ") + QString::number(ap.lineIdx) + QString("\r\n");
-      labelMsg += QString("Point: ") + QString::number(ap.pointIdx) + QString("\r\n");
+      labelMsg += QString("Strip    : ") + QString::fromStdString(ap.cLineIdx) + QString("\r\n");
+      labelMsg += QString("Point No.: ") + QString::fromStdString(ap.cPointIdx) + QString("\r\n");
       //labelMsg += QString("x: ") + QString::number(x, 'g', 9) + QString("\r\n");
       //labelMsg += QString("y: ") + QString::number(y, 'g', 9) + QString("\r\n");
       //labelMsg += QString("z: ") + QString::number(z, 'g', 9) + QString("\r\n");
-      labelMsg += QString("vel: ") + QString::number(speed, 'g', 9) + QString("\r\n");
-      labelMsg += QString("az: ") + QString::number(angle, 'g', 9);
+      labelMsg += QString("HV       : ") + QString::number(speed, 'g', 9) + QString("\r\n");
+      labelMsg += QString("Azimuth  : ") + QString::number(angle, 'g', 9) + QString("\r\n");
+      labelMsg += QString("Altitude : ") + QString::number(ap.hgt, 'g', 9) + QString("\r\n");
+      labelMsg += QString("Distance : ") + QString::number(ap.distance, 'g', 9) + QString("\r\n");
+      labelMsg += QString("Dev.Angle: ") + QString::number(ap.aoy, 'g', 9);
+      //labelMsg += QString("Dev. Dist : ") + QString::number(ap.distance, 'g', 9) + QString("\r\n");
       pPlaneMsgLabel->setText(labelMsg);
 
       pIndicatingMsgWidget->setHeight(int(ap.hgt));
 
-      pIndicatingHeadWidget->setAngle(ap.angle - 10, ap.angle);
+      pIndicatingHeadWidget->setAngle(ap.designAngle, ap.angle);
   }
 }
 
@@ -436,11 +479,12 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     return false;
 
   double dlon, dlat, dhgt, dvel, daz;
-  double dFlon, dFlat, dFhgt, daoy, dDistan;
-  int nstatus, nLineIdx, nPointIdx;
-  int nFLineIdx, nFPointIdx;
-  std::string time, lon, lat, hgt, vel, az, status, lineIdx, pointIdx;
-  std::string flineIdx, fpointIdx, flon, flat, fhgt, aoy, distan;
+  double dFlon, dFlat, dFhgt, daoy, dDistan, dDesignAZ;
+  int nstatus;
+  std::string _cLineIdx, _cPointIdx, cLineIdx, cPointIdx;
+  std::string _fLineIdx, _fPointIdx, fLineIdx, fPointIdx;
+  std::string time, lon, lat, hgt, vel, az, status;
+  std::string flon, flat, fhgt, aoy, distan, designAZ;
 
   while (std::string::npos != data.find(","))
   {
@@ -451,8 +495,8 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
   {
     iss.clear();
     iss.str(data);
-    iss >> time >> lon >> lat >> hgt >> vel >> az >> status >> lineIdx >> pointIdx
-           >> flineIdx >> fpointIdx >> flon >> flat >> fhgt >> aoy >> distan;
+    iss >> time >> lon >> lat >> hgt >> vel >> az >> status >> _cLineIdx >> _cPointIdx
+        >> _fLineIdx >> _fPointIdx >> flon >> flat >> fhgt >> aoy >> distan >> designAZ;
 
     lon.replace(lon.find(":"), 1, " ");
     iss.clear();
@@ -490,29 +534,29 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     iss >> status >> nstatus;
     ap.status = nstatus;
 
-    lineIdx.replace(lineIdx.find(":"), 1, " ");
+    _cLineIdx.replace(_cLineIdx.find(":"), 1, " ");
     iss.clear();
-    iss.str(lineIdx);
-    iss >> lineIdx >> nLineIdx;
-    ap.lineIdx = nLineIdx;
+    iss.str(_cLineIdx);
+    iss >> _cLineIdx >> cLineIdx;
+    ap.cLineIdx = cLineIdx;
 
-    pointIdx.replace(pointIdx.find(":"), 1, " ");
+    _cPointIdx.replace(_cPointIdx.find(":"), 1, " ");
     iss.clear();
-    iss.str(pointIdx);
-    iss >> pointIdx >> nPointIdx;
-    ap.pointIdx = nPointIdx;
+    iss.str(_cPointIdx);
+    iss >> _cPointIdx >> cPointIdx;
+    ap.cPointIdx = cPointIdx;
 
-    flineIdx.replace(flineIdx.find(":"), 1, " ");
+    _fLineIdx.replace(_fLineIdx.find(":"), 1, " ");
     iss.clear();
-    iss.str(flineIdx);
-    iss >> flineIdx >> nFLineIdx;
-    ap.FlineIdx = nFLineIdx;
+    iss.str(_fLineIdx);
+    iss >> _fLineIdx >> fLineIdx;
+    ap.FlineIdx = fLineIdx;
 
-    fpointIdx.replace(fpointIdx.find(":"), 1, " ");
+    _fPointIdx.replace(_fPointIdx.find(":"), 1, " ");
     iss.clear();
-    iss.str(fpointIdx);
-    iss >> fpointIdx >> nFPointIdx;
-    ap.FpointIdx = nFPointIdx;
+    iss.str(_fPointIdx);
+    iss >> _fPointIdx >> fPointIdx;
+    ap.FpointIdx = fPointIdx;
 
     flon.replace(flon.find(":"), 1, " ");
     iss.clear();
@@ -543,6 +587,12 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
     iss.str(distan);
     iss >> distan >> dDistan;
     ap.distance = dDistan;
+
+    designAZ.replace(designAZ.find(":"), 1, " ");
+    iss.clear();
+    iss.str(designAZ);
+    iss >> designAZ >> dDesignAZ;
+    ap.designAngle = dDesignAZ;
   }
   catch(...)
   {

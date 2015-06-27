@@ -28,18 +28,19 @@ public:
   ~GeoShapeData();
 
 public:
-  static void registerGhtFile(string filePath);
-  static void registerShape(void*& pVoid, shapeData::ShapeType t);
-  static void releaseShape();
-  static void registerGP(GuidancePointPtr& pPoint);
-  static void releaseGPs();
-  static void setAirPlane(QPointF p);
-  static void setExposurePoint(QPointF p);
-  static bool registerRecentFiles(std::string file);
-  static void getGeoRect(QRectF& geoRect);
-  static void setHeadingAngle(double _angle);
-  static void clearRecentFiles();
-  static void setGuidanceLine(QPointF beg, QPointF end);
+  static void   registerGhtFile(string filePath);
+  static void   registerShape(void*& pVoid, shapeData::ShapeType t);
+  static void   releaseShape();
+  static void   registerGP(GuidancePointPtr& pPoint);
+  static void   releaseGPs();
+  static void   setAirPlane(QPointF p);
+  static void   setExposurePoint(QPointF p);
+  static bool   registerRecentFiles(std::string file);
+  static void   getGeoRect(QRectF& geoRect);
+  static void   setHeadingAngle(double _angle);
+  static double getHeadingAngle();
+  static void   clearRecentFiles();
+  static void   setGuidanceLine(QPointF beg, QPointF end);
 
 protected:
   static void recalcBoundingBox(QRectF& geoRect, void* pVoid, shapeData::ShapeType t);

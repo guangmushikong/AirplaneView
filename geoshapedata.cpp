@@ -217,29 +217,34 @@ void GeoShapeData::registerGhtFile(string filePath)
 
 bool GeoShapeData::registerRecentFiles(std::string file)
 {
-	bool bRlt = false;
-	if (setRecentFiles.end() == setRecentFiles.find(file))
-	{
-		setRecentFiles.insert(file);
-		bRlt = true;
-	}
+  bool bRlt = false;
+  if (setRecentFiles.end() == setRecentFiles.find(file))
+  {
+    setRecentFiles.insert(file);
+    bRlt = true;
+  }
 
-	return bRlt;
+  return bRlt;
 }
 
 void GeoShapeData::getGeoRect(QRectF& geoRect)
 {
-	list<shapeDataPtr>::iterator it;
-	for (it = listShapeData.begin(); it != listShapeData.end(); ++it)
-	{
-		shapeDataPtr ptr = *it;
-		recalcBoundingBox(geoRect, ptr->pVoid, ptr->type);
-	}
+  list<shapeDataPtr>::iterator it;
+  for (it = listShapeData.begin(); it != listShapeData.end(); ++it)
+  {
+    shapeDataPtr ptr = *it;
+    recalcBoundingBox(geoRect, ptr->pVoid, ptr->type);
+  }
 }
 
 void GeoShapeData::setHeadingAngle(double _angle)
 {
   headingAngle = _angle;
+}
+
+double GeoShapeData::getHeadingAngle()
+{
+  return headingAngle;
 }
 
 void GeoShapeData::clearRecentFiles()

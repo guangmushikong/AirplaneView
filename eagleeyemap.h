@@ -16,6 +16,7 @@ public:
 protected:
   virtual double getDrawScale();
   virtual void setGeoCoordSys(QPainter& painter);
+  virtual void move2point(QPointF); // Keep CCP in the viewport
 };
 
 #endif // EAGLEEYEMAP_H

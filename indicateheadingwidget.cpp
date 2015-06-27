@@ -34,6 +34,8 @@ void IndicateHeadingWidget::paintEvent(QPaintEvent* ev)
 {
   // draw circle
   QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing, true);
+
   QPen pen;
   pen.setWidth(2);
   pen.setColor(Qt::white);
@@ -48,9 +50,9 @@ void IndicateHeadingWidget::paintEvent(QPaintEvent* ev)
 
   // draw line angle
   painter.setPen(QPen(Qt::NoPen));
-  painter.setBrush(QBrush(QColor(0, 0, 255)));
+  painter.setBrush(QBrush(QColor(0, 255, 0)));
   drawNeedle(lineAngle, painter);
-  painter.setBrush(QBrush(QColor(255, 0, 255)));
+  painter.setBrush(QBrush(QColor(255, 0, 0)));
   drawNeedle(realAngle, painter);
 
 }

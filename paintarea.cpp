@@ -1,5 +1,6 @@
 #include "paintarea.h"
 #include <QPainter>
+#include "uiparamconfig.h"
 
 #include <fstream>
 
@@ -98,29 +99,36 @@ double PaintArea::getRealScale()
 void PaintArea::paintEvent(QPaintEvent *event)
 {
   QPainter painter(this);
+  painter.setRenderHint(QPainter::Antialiasing, true);
 
   paintLabelScale(painter);
+
+  if ( PlaneHeading == UIParamConfig::getViewDirection() )
+  {
+    if ( 1 == maptype )
+    {
+      painter.rotate(GeoShapeData::getHeadingAngle());
+    }
+  }
 
   setGeoCoordSys(painter);
   std::map<shapeData::ShapeType, drawObject*>::iterator it;
   for(it = mapDrawObject.begin(); it != mapDrawObject.end(); ++it)
   {
-    //if (it->first != shapeData::airplane)
-    //{
+    if (it->first != shapeData::airplane)
+    {
       drawObject* pDraw = it->second;
       pDraw->setGeoRect(geoRect);
       pDraw->setScale(getDrawScale());
       pDraw->draw(painter);
-    //}
+    }
   }
 
-//  it = mapDrawObject.find(shapeData::airplane);
-//  drawObject* pDraw = it->second;
-//  pDraw->setGeoRect(geoRect);
-//  pDraw->setScale(getDrawScale());
-//  pDraw->draw(painter);
-
-
+  it = mapDrawObject.find(shapeData::airplane);
+  drawObject* pDraw = it->second;
+  pDraw->setGeoRect(geoRect);
+  pDraw->setScale(getDrawScale());
+  pDraw->draw(painter);
 }
 
 void PaintArea::registerShape(void *pVoid, shapeData::ShapeType type, int nNum)

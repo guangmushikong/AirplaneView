@@ -41,3 +41,6 @@ void EagleEyeMap::setGeoCoordSys(QPainter &painter)
 {
   painter.setWindow(-100, 100, 200, -200);
 }
+
+void EagleEyeMap::move2point(QPointF)
+{}
