@@ -32,7 +32,9 @@ SOURCES += main.cpp\
     coordtranslate.cpp \
     indicatingmsgwidget.cpp \
     indicateheadingwidget.cpp \
-    uiparamconfig.cpp
+    uiparamconfig.cpp \
+    mysleeper.cpp \
+    wait4tolerancedlg.cpp
 
 HEADERS  += mainwindow.h \
     myrectf.h \
@@ -49,7 +51,9 @@ HEADERS  += mainwindow.h \
     coordtranslate.h \
     indicatingmsgwidget.h \
     indicateheadingwidget.h \
-    uiparamconfig.h
+    uiparamconfig.h \
+    mysleeper.h \
+    wait4tolerancedlg.h
 
 FORMS    += mainwindow.ui \
     udpsettingdialog.ui \

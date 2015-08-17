@@ -18,10 +18,10 @@
 #include "udpmsgformat.h"
 #include "datadefine.h"
 #include "uiparamconfig.h"
-
-
 #include <fstream>
+#include "mysleeper.h"
 
+//#define TEST
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  setWindowTitle("Airplane View");
   setFixedSize(815, 650);
   setPalette(QPalette(QColor(203, 213, 228)));
   setAutoFillBackground(true);
@@ -81,6 +82,9 @@ MainWindow::MainWindow(QWidget *parent) :
   pAction = pMenu->addAction(tr("UdpMsg"));
   pAction->setShortcut(QKeySequence(tr("Ctrl+M")));
   connect(pAction, SIGNAL(triggered()), this, SLOT(on_action_udp_msg()) );
+  pAction = pMenu->addAction(tr("PatternMsg"));
+  pAction->setShortcut(QKeySequence(tr("Ctrl+P")));
+  connect(pAction, SIGNAL(triggered()), this, SLOT(on_action_pattern_msg()) );
 
   // Status Bar
   pStatusLabel = new QLabel();
@@ -100,7 +104,6 @@ MainWindow::MainWindow(QWidget *parent) :
   // Plane Msg Label
   pPlaneMsgLabel = new QLabel(this);
   pPlaneMsgLabel->setGeometry(590, 24, 220, 200);
-  //pPlaneMsgLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
   QFont font;
   font.setPointSize(17);
   pPlaneMsgLabel->setFont(font);
@@ -113,14 +116,10 @@ MainWindow::MainWindow(QWidget *parent) :
   pIndicatingHeadWidget->setGeometry(5, 229, 200, 200);
 
   // Plane Indicating Msg Widget
-  //pIndicatingMsgWidget = new IndicatingMsgWidget(this);
-  //pIndicatingMsgWidget->setGeometry(5, 229, 200, 200);
   pIndicatingMsgWidget = new IndicatingMsgWidget(pDetailedPaint);
   pIndicatingMsgWidget->setGeometry(0, 0, 50, 200);
 
   // Legend
-  //pLegend = new QListView(this);
-  //pLegend->setGeometry(5, 229, 200, 395);
   pLegend = new QTableView(this);
   pLegend->setGeometry(5, 434, 200, 190);
   initializeLegend();
@@ -130,19 +129,48 @@ MainWindow::MainWindow(QWidget *parent) :
 
   pUdp = new UdpSettingDialog(this);
 
+  // Buttons
+  pReshootBtn = new QPushButton(tr("补拍模式"), this);
+  pReshootBtn->setGeometry(550, 580, 80, 30);
+  pReshootBtn->setStyleSheet("QPushButton{color:white;background:black}");
+  connect(pReshootBtn, SIGNAL(clicked()), this, SLOT(on_reshoot_btn_clicked()) );
+  pReshootLabel = new QLabel(pReshootBtn);
+  pReshootLabel->setGeometry(0, 0, pReshootBtn->width(), pReshootBtn->height());
+  pReshootLabel->setFrameStyle( QFrame::Panel | QFrame::Sunken );
+
+  pReturnBaseBtn = new QPushButton(tr("返航模式"), this);
+  pReturnBaseBtn->setGeometry(400, 580, 80, 30);
+  pReturnBaseBtn->setStyleSheet("QPushButton{color:white;background:black}");
+  connect(pReturnBaseBtn, SIGNAL(clicked()), this, SLOT(on_returnbase_btn_clicked()));
+  pReturnBaseLabel = new QLabel(pReturnBaseBtn);
+  pReturnBaseLabel->setGeometry(0, 0, pReturnBaseBtn->width(), pReturnBaseBtn->height());
+  pReturnBaseLabel->setFrameStyle( QFrame::Panel | QFrame::Sunken );
+
   // Socket
   pSocket = new QUdpSocket(this);
   pSocket->bind(7001, QUdpSocket::ShareAddress);
   connect(pSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 
+  // Waiting for tolerance dialog
+  pWait4TlrDlg = new Wait4ToleranceDlg(this);
+
   //pMapTool = 0;
   pMapZoom = new MapToolZoom(pDetailedPaint);
   pMapPan  = new MapToolPan(pDetailedPaint);
   defaultPath = ".";
+
+#ifndef TEST
+  wait4Tolerance();
+#endif
 }
 
 MainWindow::~MainWindow()
 {
+  delete pWait4TlrDlg;
+  delete pReshootLabel;
+  delete pReturnBaseLabel;
+  delete pReshootBtn;
+  delete pReturnBaseBtn;
   delete pMapZoom;
   delete pMapPan;
   //delete pRubberBand;
@@ -174,6 +202,11 @@ void MainWindow::on_action_openfile()
     pDetailedPaint->registerGhtFile(defaultPath.toStdString());
     pEagleEyePaint->update();
     pDetailedPaint->update();
+
+    // set height indicator
+    int min = UIParamConfig::getDesignedHeight() - UIParamConfig::getHeightTolerance();
+    int max = UIParamConfig::getDesignedHeight() + UIParamConfig::getHeightTolerance();
+    pIndicatingMsgWidget->setHeightRange(min, max);
   }
 }
 
@@ -229,6 +262,12 @@ void MainWindow::on_action_udp_msg()
 {
   udpmsgformat dlg;
   dlg.exec();
+}
+
+void MainWindow::on_action_pattern_msg()
+{
+    PatternInfo dlg;
+    dlg.exec();
 }
 
 void MainWindow::on_action_view_set()
@@ -294,13 +333,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
   if ( Xmouse > Xmin && Xmouse < Xmax &&
        Ymouse > Ymin && Ymouse < Ymax)
   {
-      if (pMapPan)
+    if (pMapPan)
+    {
+      if (Qt::LeftButton == event->button())
       {
-          if (Qt::LeftButton == event->button())
-          {
-            pMapPan->OnLButtonDown(event->localPos());
-          }
+        pMapPan->OnLButtonDown(event->localPos());
       }
+    }
   }
 //  else if (pEagleEyePaint->geometry().contains(event->pos()))
 //  {
@@ -326,13 +365,13 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
   if ( Xmouse > Xmin && Xmouse < Xmax &&
        Ymouse > Ymin && Ymouse < Ymax)
   {
-      if (pMapPan)
+    if (pMapPan)
+    {
+      if (Qt::LeftButton == event->button())
       {
-          if (Qt::LeftButton == event->button())
-          {
-            pMapPan->OnLButtonUp(event->localPos());
-          }
+        pMapPan->OnLButtonUp(event->localPos());
       }
+    }
   }
 //  else if (pEagleEyePaint->geometry().contains(event->pos()))
 //  {
@@ -372,12 +411,12 @@ void MainWindow::on_action_udp()
 {
   if ( QDialog::Accepted == pUdp->exec() )
   {
-      pSocket->abort();
-      pSocket->bind(pUdp->getPort(), QUdpSocket::ShareAddress);
-      connect(pSocket,
-              SIGNAL(readyRead()),
-              this,
-              SLOT(readPendingDatagrams()));
+    pSocket->abort();
+    pSocket->bind(pUdp->getPort(), QUdpSocket::ShareAddress);
+    connect(pSocket,
+            SIGNAL(readyRead()),
+            this,
+            SLOT(readPendingDatagrams()));
   }
 }
 
@@ -412,7 +451,6 @@ void MainWindow::initializeLegend()
   //pItem->setBackground(QBrush(QColor(QColor(255, 0, 255))));
   //pSIM->setItem(4, 1, pItem);
 
-
   pLegend->setModel(pSIM);
 }
 
@@ -420,24 +458,105 @@ void MainWindow::readPendingDatagrams()
 {
   while (pSocket->hasPendingDatagrams())
   {
-      QByteArray datagram;
-      datagram.resize(pSocket->pendingDatagramSize());
-      QHostAddress sender;
-      quint16 senderPort;
-      std::string socketdata;
+    QByteArray datagram;
+    datagram.resize(pSocket->pendingDatagramSize());
+    QHostAddress sender;
+    quint16 senderPort;
+    std::string socketdata;
 
-      pSocket->readDatagram(datagram.data(), datagram.size(),
-                            &sender, &senderPort);
-      socketdata = std::string(datagram.data());
-      processTheDatagram(socketdata);
+    pSocket->readDatagram(datagram.data(), datagram.size(),
+                          &sender, &senderPort);
+    socketdata = std::string(datagram.data());
+    processTheDatagram(socketdata);
   }
+}
+
+void MainWindow::on_reshoot_btn_clicked()
+{
+  if (pSocket && pUdp)
+  {
+    std::string strMsg;
+    if (0 == UIParamConfig::getShootModel())
+    {
+        strMsg = "#0";
+        UIParamConfig::setShootModel(1);
+        pReshootBtn->setText(tr("停止补拍"));
+    }
+    else if (1 == UIParamConfig::getShootModel())
+    {
+        strMsg = "#1";
+        UIParamConfig::setShootModel(0);
+        pReshootBtn->setText(tr("补拍模式"));
+    }
+    QByteArray ary(strMsg.c_str());
+    pSocket->writeDatagram(ary, ary.size(),
+                           QHostAddress::Broadcast,
+                           pUdp->getPort());
+  }
+}
+
+void MainWindow::on_returnbase_btn_clicked()
+{
+  if (pSocket && pUdp)
+  {
+    std::string strMsg;
+    if (0 == UIParamConfig::getReturnBase())
+    {
+        UIParamConfig::setReturnBase(1);
+        strMsg = "#2";
+        pReshootBtn->hide();
+        pReturnBaseBtn->setText(tr("停止返航"));
+    }
+    else if (1 == UIParamConfig::getReturnBase())
+    {
+        UIParamConfig::setReturnBase(0);
+        strMsg = "#3";
+        pReshootBtn->setEnabled(true);
+        pReshootBtn->show();
+        pReturnBaseBtn->setText(tr("返航模式"));
+    }
+    QByteArray ary(strMsg.c_str());
+    pSocket->writeDatagram(ary, ary.size(),
+                           QHostAddress::Broadcast,
+                           pUdp->getPort());
+
+  }
+}
+
+void MainWindow::emitSignal4BasicMsg()
+{
+    std::string signal("#4");
+    QByteArray ary(signal.c_str());
+    if (pSocket)
+    {
+        pSocket->writeDatagram(ary, ary.size(),
+                               QHostAddress::Broadcast,
+                               pUdp->getPort());
+    }
+}
+
+void MainWindow::wait4Tolerance()
+{
+    pWait4TlrDlg->show();
+    while (!UIParamConfig::validTolerance())
+    {
+        emitSignal4BasicMsg();
+        QCoreApplication::processEvents();
+        MySleeper::mysleep(100);
+    }
 }
 
 void MainWindow::processTheDatagram(std::string data)
 {
   AirPlane ap;
-  if (getAirPlaneMsg(data, ap))
+  if (std::string::npos != data.find("config"))
   {
+    getTolerance(data);
+  }
+  else
+  {
+    if (getAirPlaneMsg(data, ap))
+    {
       pDetailedPaint->move2point(ap.pos);
       pEagleEyePaint->move2point(ap.pos);
 
@@ -448,29 +567,70 @@ void MainWindow::processTheDatagram(std::string data)
       pDetailedPaint->update();
       pEagleEyePaint->update();
 
-      //double x = ap.pos.x();
-      //double y = ap.pos.y();
-      //double z = ap.hgt;
       double speed = ap.speed;
       double angle = ap.angle;
       QString labelMsg("");
       labelMsg += QString("Strip    : ") + QString::fromStdString(ap.cLineIdx) + QString("\r\n");
       labelMsg += QString("Point No.: ") + QString::fromStdString(ap.cPointIdx) + QString("\r\n");
-      //labelMsg += QString("x: ") + QString::number(x, 'g', 9) + QString("\r\n");
-      //labelMsg += QString("y: ") + QString::number(y, 'g', 9) + QString("\r\n");
-      //labelMsg += QString("z: ") + QString::number(z, 'g', 9) + QString("\r\n");
       labelMsg += QString("HV       : ") + QString::number(speed, 'g', 9) + QString("\r\n");
       labelMsg += QString("Azimuth  : ") + QString::number(angle, 'g', 9) + QString("\r\n");
       labelMsg += QString("Altitude : ") + QString::number(ap.hgt, 'g', 9) + QString("\r\n");
       labelMsg += QString("Distance : ") + QString::number(ap.distance, 'g', 9) + QString("\r\n");
       labelMsg += QString("Dev.Angle: ") + QString::number(ap.aoy, 'g', 9);
-      //labelMsg += QString("Dev. Dist : ") + QString::number(ap.distance, 'g', 9) + QString("\r\n");
+
       pPlaneMsgLabel->setText(labelMsg);
-
       pIndicatingMsgWidget->setHeight(int(ap.hgt));
-
       pIndicatingHeadWidget->setAngle(ap.designAngle, ap.angle);
+    }
   }
+}
+
+// status:config,distance:50,height:150
+bool MainWindow::getTolerance(string &data)
+{
+    if (data.size() <=0){ return false; }
+    while (std::string::npos != data.find(","))
+    {
+        data.replace(data.find(","), 1, " ");
+    }
+    std::string strHead, strDistance, strHeight;
+    int distance, height;
+    try
+    {
+        iss.clear();
+        iss.str(data);
+        iss >> strHead >> strDistance >> strHeight;
+
+        strDistance.replace(strDistance.find(":"), 1, " ");
+        iss.clear();
+        iss.str(strDistance);
+        iss >> strDistance >> distance;
+
+        strHeight.replace(strHeight.find(":"), 1, " ");
+        iss.clear();
+        iss.str(strHeight);
+        iss >> strHeight >> height;
+
+        UIParamConfig::setDistanceTolerance(distance);
+        UIParamConfig::setHeightTolerance(height);
+    }
+    catch(...)
+    {
+        QDir dir;
+        std::string runtimelog = dir.currentPath().toStdString();
+        runtimelog += std::string("/runtime.log");
+        std::ofstream outfile(runtimelog, std::ios::app);
+        if (outfile.is_open())
+        {
+            outfile << "Message format("
+                    << data << ") received by UDPSocket isn't right..."
+                    << std::endl;
+        }
+
+        return false;
+    }
+    pWait4TlrDlg->hide();
+    return true;
 }
 
 bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
@@ -495,8 +655,13 @@ bool MainWindow::getAirPlaneMsg(std::string & data, AirPlane &ap)
   {
     iss.clear();
     iss.str(data);
-    iss >> time >> lon >> lat >> hgt >> vel >> az >> status >> _cLineIdx >> _cPointIdx
-        >> _fLineIdx >> _fPointIdx >> flon >> flat >> fhgt >> aoy >> distan >> designAZ;
+    iss >> time
+        >> lon >> lat >> hgt
+        >> vel >> az  >> status
+        >> _cLineIdx  >> _cPointIdx
+        >> _fLineIdx  >> _fPointIdx
+        >> flon >> flat   >> fhgt
+        >> aoy  >> distan >> designAZ;
 
     lon.replace(lon.find(":"), 1, " ");
     iss.clear();

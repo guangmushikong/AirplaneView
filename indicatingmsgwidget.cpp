@@ -35,6 +35,10 @@ IndicatingMsgWidget::~IndicatingMsgWidget()
 void IndicatingMsgWidget::setHeightRange(int min, int max)
 {
   pIndicateHeight->setRange(min, max);
+  pMaxLabel->setText(QString::number(max));
+  pMinLabel->setText(QString::number(min));
+  pMidLabel->setText(QString::number((min+max)/2));
+  update();
 }
 
 void IndicatingMsgWidget::setHeight(int vle)

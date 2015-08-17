@@ -3,6 +3,7 @@
 #include <QPolygonF>
 #include <sstream>
 #include <fstream>
+#include "uiparamconfig.h"
 
 list<shapeDataPtr> GeoShapeData::listShapeData;
 list<GuidancePointPtr> GeoShapeData::listGPs;
@@ -200,6 +201,7 @@ void GeoShapeData::registerGhtFile(string filePath)
                                   QPointF(dCoordY, dCoordX),
                                   lineNum,
                                   PointNum);
+          UIParamConfig::setDesignedHeight(int(dCoordZ));
       }
       vtrPoints.push_back(QPointF(dCoordY, dCoordX));
     }

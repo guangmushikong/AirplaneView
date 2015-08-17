@@ -10,6 +10,9 @@
 #include <QUdpSocket>
 #include <sstream>
 #include <QLabel>
+#include <QPushButton>
+#include <QGridLayout>
+#include "wait4tolerancedlg.h"
 
 
 
@@ -44,8 +47,11 @@ private slots:
   void on_action_zoom();
   void on_action_udp();
   void on_action_udp_msg();
+  void on_action_pattern_msg();
   void on_action_view_set();
   void readPendingDatagrams();
+  void on_reshoot_btn_clicked();
+  void on_returnbase_btn_clicked();
 
 protected:
   void mouseMoveEvent(QMouseEvent* event);
@@ -54,9 +60,12 @@ protected:
   void wheelEvent(QWheelEvent* event);
   void processTheDatagram(std::string);
   bool getAirPlaneMsg(std::string & data, AirPlane &ap);
+  bool getTolerance(std::string& data);
 
 private:
   void initializeLegend();
+  void emitSignal4BasicMsg();
+  void wait4Tolerance();
 
 private:
   Ui::MainWindow *ui;
@@ -77,6 +86,12 @@ private:
   QLabel* pPlaneMsgLabel;
   IndicatingMsgWidget* pIndicatingMsgWidget;      // indicate height
   IndicateHeadingWidget* pIndicatingHeadWidget;   // indicate heading
+  QPushButton* pReshootBtn;
+  QLabel* pReshootLabel;
+  QPushButton* pReturnBaseBtn;
+  QLabel* pReturnBaseLabel;
+  //QGridLayout* pBtnLayout;
+  Wait4ToleranceDlg* pWait4TlrDlg;
 
 
 private:

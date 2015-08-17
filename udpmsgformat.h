@@ -22,4 +22,18 @@ private:
   Ui::udpmsgformat *ui;
 };
 
+class PatternInfo : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit PatternInfo(QWidget * parent = 0);
+    ~PatternInfo();
+
+private slots:
+    void on_close_clicked();
+
+private:
+    Ui::udpmsgformat *ui;
+};
+
 #endif // UDPMSGFORMAT_H
